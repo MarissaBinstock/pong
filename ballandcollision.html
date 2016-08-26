@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+        #myCanvas {
+            border: 1px solid green;
+        }
+    </style>
+    <!-- <script src="src/keyPressPaddles.js"></script> -->
+</head>
+<body>
+<canvas id="myCanvas" width="578" height="200"></canvas>
+<script>
+    /*
+    * requestAnimFrame is a property of window.
+    * It actually is a function.
+    * It takes a function as its argument
+    * The function will be called every time the window/browser 'refreshes'
+    * (think like an old school TV screen a particular frame of a movie)
+    * each frame is shown at frame rate relevant for that browser
+    * but instead of a new "frame" argument that is the function
+    * "renders" a new frame, i.e. drawing a new rectangle or whatever.
+    * */
+    window.requestAnimFrame = (function(callback) {
+        return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+    })();
+
+    var canvas = document.getElementById('myCanvas');
+    var context = canvas.getContext('2d');
+    // centreX and centreY are the initial coordinates of the ball
+    // wrt the centre of the ball.
+    var myPongBall = {
+        centreX: (canvas.width / 2),
+        centreY: (canvas.height  / 2),
+        ballRadius:15,
+        borderWidth: 2
+    };
+
+    function drawCourtEdge(context){
+        context.beginPath();
+        context.strokeStyle = 'green';
+        context.strokeRect(0,0,canvas.width,canvas.height);
+
+    }
+
+    function drawPongBall(myPongBall, context) {
+        context.beginPath();
+        context.arc(myPongBall.centreX, myPongBall.centreY,
+                myPongBall.ballRadius, 0, 2 * Math.PI, false);
+        context.fillStyle = '#8ED6FF';
+        context.fill();
+        context.lineWidth = myPongBall.borderWidth;
+        context.strokeStyle = 'black';
+        context.stroke();
+    }
+
+    drawPongBall(myPongBall, context);
+
+    var directionX = 1; // 1 is positive (to the right), -1 is to the left
+    var directionY = 1;
+    var speedX = 5; // set the ball's initial speed
+    var speedY = 6;
+    var pongBallX = myPongBall.centreX; // set the ball's initial x position;
+    var pongBallY = myPongBall.centreY; // set the ball's initial y position;
+
+    function animate(myPongBall, canvas, context) {
+        console.log("The animate method is refreshing the 'screen'.");
+        // check if the ball hits the left or right edge
+        checkIfBallHitsLeftOrRightEdge(myPongBall.centreX,myPongBall.centreY);
+        // check if ball hits the bottom or top edge
+        checkIfBallHitsTopOrBottomEdge (myPongBall.centreX, myPongBall.centreY);
+        // set the x-coordinate of the pong ball
+        pongBallX = pongBallX + (speedX*directionX);
+        myPongBall.centreX = pongBallX;
+
+        pongBallY = pongBallY + (speedY*directionY);
+        myPongBall.centreY = pongBallY;
+
+        // erase the canvas, including the drawing of the pong ball
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // redraw the pong ball at the new position
+        drawPongBall(myPongBall, context);
+
+        // request new frame
+        var callBack = function() {
+            animate(myPongBall, canvas, context );
+        };
+        requestAnimFrame(callBack);
+    }
+
+    function checkIfBallHitsLeftOrRightEdge(currentX,currentY){
+        console.log("checking for left/right edge collision.")
+        // how do we check for collision?
+        // TODO: with a paddle
+        // with a border
+        var rightEdge = canvas.width;
+        var leftEdge = 0;
+        console.log("the currentX of target is " + currentX);
+        console.log("the currentY of target is " + currentY);
+
+        // add compensation for pong ball's radius
+        if (directionX==1){
+            currentX = currentX + myPongBall.ballRadius;
+        }else{
+            currentX = currentX - myPongBall.ballRadius;
+        }
+
+        var ballHitsRightEdge = (currentX>=rightEdge)?true:false;
+        var ballHitsLeftEdge = (currentX<=leftEdge)?true:false;
+
+        if(ballHitsLeftEdge || ballHitsRightEdge){
+            console.log("collision detected");
+            directionX = -directionX;
+        }
+
+    }
+
+    function checkIfBallHitsTopOrBottomEdge (currentX, currentY) {
+        console.log("checking for top/bottom edge collision.")
+        var topEdge = 0;
+        var bottomEdge = canvas.height;
+         if (directionY==1){
+            currentY = currentY + myPongBall.ballRadius;
+        }else{
+            currentY = currentY - myPongBall.ballRadius;
+        }
+        var ballHitsTopEdge = (currentY<=topEdge)?true:false;
+        var ballHitsBottomEdge = (currentY>=bottomEdge)?true:false;
+
+        if(ballHitsTopEdge || ballHitsBottomEdge){
+            console.log("collision detected");
+            directionY = -directionY;
+        }
+
+    }
+    
+    // function paddleHit (currentX, currentY) {
+    //     var topEdgePaddle = 
+    // }
+
+    // wait one second before starting animation
+    setTimeout(animate, 1000,myPongBall,canvas,context);
+
+</script>
+</body>
+</html>
